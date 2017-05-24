@@ -3,149 +3,154 @@
 
 #include<iostream>
 #include<cassert>
+//#include"math.h"
 
 class vec3
 {
 public:
+
+	float x, y, z;
+
+
+	//normalized directions
+	static vec3 UP;
+	static vec3 DOWN;
+	static vec3 ZERO;
+	static vec3 LEFT;
+	static vec3 RIGHT;
+	static vec3 FORWARD;
+	static vec3 BACKWARD;
+
   //construction
   vec3(float x = 0.0f, float y = 0.0f, float z = 0.0f);
   vec3(const vec3& other);
   vec3& operator = (const vec3& other);
   //destruction
   ~vec3();
-  //getters
-  inline float x() const { return comps[0]; }
-  inline float y() const { return comps[1]; }
-  inline float z() const { return comps[2]; }
-  inline float r() const { return comps[0]; }
-  inline float g() const { return comps[1]; }
-  inline float b() const { return comps[2]; }
   
-  //for non-const objects
-  inline float& operator[](int index) {
-    return comps[index];
-  }
 
-  //for const objects
-  inline float operator[](int index) const {
-    return comps[index];
-  }
- 
   //vec3-vec3 arithmetic operations
   inline vec3 operator + (const vec3& other) const{
-    return vec3( comps[0]+other[0],
-      comps[1] + other[1],
-      comps[2] + other[2]);
+    return vec3( x+other.x,
+      y + other.y,
+      z + other.z);
   }
   inline vec3 operator - (const vec3& other) const {
-    return vec3(comps[0] - other[0],
-      comps[1] - other[1],
-      comps[2] - other[2]);
+    return vec3(x - other.x,
+      y - other.y,
+      z - other.z);
   }
+
+  //vec3-vec3 arithmetic operations
+  inline vec3 operator += (const vec3& other) const {
+	  return vec3(x + other.x,
+		  y + other.y,
+		  z + other.z);
+  }
+
+
   inline vec3 operator * (const vec3& other) const {
-    return vec3(comps[0]*other[0],
-      comps[1]*other[1],
-      comps[2]*other[2]);
+    return vec3(x*other.x,
+      y*other.y,
+      z*other.z);
   }
   inline vec3 operator / (const vec3& other) const {
-    assert((int)other[0]!=0 && (int)other[1]!=0 && (int)other[2]!=0);
-    return vec3(comps[0] / other[0],
-      comps[1] / other[1],
-      comps[2] / other[2]);
+    assert((int)other.x!=0 && (int)other.y!=0 && (int)other.z!=0);
+    return vec3(x / other.x,
+      y / other.y,
+      z / other.z);
   }
   inline void operator *= (const vec3& other) {
-    comps[0] *= other[0];
-    comps[1] *= other[1];
-    comps[2] *= other[2];
+    x *= other.x;
+    y *= other.y;
+    z *= other.z;
   }
   inline void operator /= (const vec3& other) {
-     assert((int)other[0]!=0 && (int)other[1]!=0 && (int)other[2]!=0);
-     comps[0] /= other[0];
-     comps[1] /= other[1];
-     comps[2] /= other[2];
+     x /= other.x;
+     y /= other.y;
+     z /= other.z;
   }
   //vec3-scalar * & /
  
   inline vec3 operator / (float scalar) const {
-    assert(scalar>0.00000000f);
-    return vec3(comps[0] / scalar, comps[1] / scalar, comps[2]/scalar);
+    assert(scalar>0.00000f);
+    return vec3(x / scalar, y / scalar, z/scalar);
   }
   inline void operator *= (float scalar) {
-    comps[0] *= scalar; 
-    comps[1] *= scalar; 
-    comps[2] *= scalar;
+    x *= scalar; 
+    y *= scalar; 
+    z *= scalar;
   }
   inline void operator /= (float scalar) {
     assert(scalar>0.00000000f);
-    comps[0] /= scalar; 
-    comps[1] /= scalar; 
-    comps[2] /= scalar;
+    x /= scalar; 
+    y /= scalar; 
+    z /= scalar;
   }
 
   inline vec3 normalize() const {
     vec3 v;
-    v[0] = comps[0] / length();
-    v[1] = comps[1] / length();
-    v[2] = comps[2] / length();
+    v.x = x / length();
+    v.y = y / length();
+    v.z = z / length();
     return v;
   }
 
 
   inline float length() const{
-    return (sqrtf((comps[0]*comps[0])+(comps[1]*comps[1])+(comps[2]*comps[2])));
+    return (sqrt((x*x)+(y*y)+(z*z)));
   }
 
 
   inline float squared_length() const {
-    return comps[0] * comps[0] + comps[1] * comps[1] + comps[2] * comps[2];
+    return x * x + y * y + z * z;
   }
 
   inline void make_it_unit() {
     
-    comps[0] /= length();
-    comps[1] /= length();
-    comps[2] /= length();
+    x /= length();
+    y /= length();
+    z /= length();
 
   }
 
-  inline vec3& make_it_zero() {
-    comps[0] = comps[1] = comps[2] = 0;
+  inline vec3& make_itzero() {
+    x = y = z = 0;
     return *this;
   }
   inline float dot(const vec3& other) const {
-    return ((comps[0]*other[0])+(comps[1]*other[1])+(comps[2]*other[2]));
+    return ((x*other.x)+(y*other.y)+(z*other.z));
   }
   inline vec3 cross(const vec3& other) const {
     return vec3(
-    comps[1]*other[2]+comps[2]*other[1],
-      comps[2]*other[0]+comps[0]*other[2],
-      comps[0]*other[1]+comps[1]*other[0]
+    y*other.z+z*other.y,
+      z*other.x+x*other.z,
+      x*other.y+y*other.x
     );
   }
   //checks 
-  bool check_if_zero() const{
+  bool check_ifzero() const{
     //typecasting the floats to int since its hard to compare two floats against each other
-    bool result = (((int)comps[0]) == 0 && ((int)comps[1]) == 0 && ((int)comps[2]) == 0);
+    bool result = (((int)x) == 0 && ((int)y) == 0 && ((int)z) == 0);
     return result;
   }
   //IO
   friend std::ostream& operator << (std::ostream& cout, const vec3& other);
-private:
-  float comps[3]; //x,y & z or r,g & b
+
 };
 
 
 //non-member inline operators
 inline vec3 operator * (const vec3& v,float scalar) {
-  return vec3(v.x() * scalar, v.y() * scalar, v.z() * scalar);
+  return vec3(v.x * scalar, v.y * scalar, v.z * scalar);
 }
 
 inline vec3 operator * (float scalar, const vec3& v) {
-  return vec3(v.x() * scalar, v.y() * scalar, v.z() * scalar);
+  return vec3(v.x * scalar, v.y * scalar, v.z * scalar);
 }
 
 
 inline float dot(const vec3& v1, const vec3& v2) {
-  return (v1.x()*v2.x() + v1.y()*v2.y()+v1.z()*v2.z());
+  return (v1.x*v2.x + v1.y*v2.y+v1.z*v2.z);
 }
 #endif

@@ -25,6 +25,10 @@
 
 		void init();
 
+		inline int get_frame_count() { return mCounter; }
+
+		void reset();
+		void start();
 		void update();
 	
 		inline double get_elapsed_time() const {
@@ -49,9 +53,10 @@
 		mClock::time_point mCurrent;
 		double mElapsedTime;
 
+		int mFrameCounter;
 		//For FPS
-		unsigned int mFPS;
-		unsigned int mCounter;
+		int mFPS;
+		int mCounter;
 		mClock::time_point mLastTime;
 
 

@@ -1,33 +1,34 @@
 #ifndef INCLUDE_SPHERE_H
 #define INCLUDE_SPHERE_H
 
-#include"hitable.h"
 #include"vec3.h"
 #include"ray.h"
-#include"material.h"
+#include"object.h"
+#include"global_settings.h"
 
-class sphere : public hitable {
+class sphere {
 
 private:
 
-  material *mMaterial;
   vec3 mCenter;
   float mRadius;
+  vec3 mColor;
+  
 
 public:
-  
-  sphere(const vec3& pCenter,float pRadius,material* pMaterial);
-  
-  virtual bool hit(const ray& ray,
-    float tMin,
-    float tMax,
-    hit_record& hitRec) const override;
 
+	global_settings::MATERIAL mat;
+  sphere(const vec3& pCenter,float pRadius,const vec3& pColor,global_settings::MATERIAL material);
   inline vec3 getCenter() { return mCenter; }
   inline float getRadius() { return mRadius; }
   inline void setCenter(const vec3& pCenter) { mCenter = pCenter; }
   inline void setRadius(float pRadius) { mRadius = pRadius; }
   
+  bool hit(const ray& r, double& hitPoint,vec3& normal,double tMin,double tMax);
+  bool hitOrNot(const ray& r,float tMin,float tMax);
+
+  vec3 get_color(){ return mColor; }
+
 
 };
 

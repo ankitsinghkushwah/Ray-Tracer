@@ -138,18 +138,19 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <Text Include="Logs.txt" />
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="camera.h" />
-    <ClInclude Include="diffuse_material.h" />
     <ClInclude Include="global_settings.h" />
-    <ClInclude Include="hitable.h" />
-    <ClInclude Include="hitable_list.h" />
     <ClInclude Include="logger.h" />
     <ClInclude Include="material.h" />
+    <ClInclude Include="math.h" />
+    <ClInclude Include="object.h" />
+    <ClInclude Include="plane.h" />
     <ClInclude Include="random.h" />
     <ClInclude Include="ray.h" />
+    <ClInclude Include="ray_tracer.h" />
     <ClInclude Include="sphere.h" />
     <ClInclude Include="stb_image.h" />
     <ClInclude Include="stb_image_write.h" />
@@ -157,14 +158,14 @@
     <ClInclude Include="vec3.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="camera.cpp" />
-    <ClCompile Include="diffuse_material.cpp" />
     <ClCompile Include="global_settings.cpp" />
-    <ClCompile Include="hitable_list.cpp" />
     <ClCompile Include="logger.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="math.cpp" />
+    <ClCompile Include="plane.cpp" />
     <ClCompile Include="random.cpp" />
     <ClCompile Include="ray.cpp" />
+    <ClCompile Include="ray_tracer.cpp" />
     <ClCompile Include="sphere.cpp" />
     <ClCompile Include="timer.cpp" />
     <ClCompile Include="vec3.cpp" />

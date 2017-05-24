@@ -675,7 +675,7 @@ static void *stbiw__sbgrowf(void **arr, int increment, int itemsize)
    return *arr;
 }
 
-static unsigned char *stbiw__zlib_flushf(unsigned char *data, unsigned int *bitbuffer, int *bitcount)
+static unsigned char *stbiw_zlib_flushf(unsigned char *data, unsigned int *bitbuffer, int *bitcount)
 {
    while (*bitcount >= 8) {
       stbiw__sbpush(data, STBIW_UCHAR(*bitbuffer));
@@ -685,7 +685,7 @@ static unsigned char *stbiw__zlib_flushf(unsigned char *data, unsigned int *bitb
    return data;
 }
 
-static int stbiw__zlib_bitrev(int code, int codebits)
+static int stbiw_zlib_bitrev(int code, int codebits)
 {
    int res=0;
    while (codebits--) {
@@ -695,7 +695,7 @@ static int stbiw__zlib_bitrev(int code, int codebits)
    return res;
 }
 
-static unsigned int stbiw__zlib_countm(unsigned char *a, unsigned char *b, int limit)
+static unsigned int stbiw_zlib_countm(unsigned char *a, unsigned char *b, int limit)
 {
    int i;
    for (i=0; i < limit && i < 258; ++i)
@@ -703,7 +703,7 @@ static unsigned int stbiw__zlib_countm(unsigned char *a, unsigned char *b, int l
    return i;
 }
 
-static unsigned int stbiw__zhash(unsigned char *data)
+static unsigned int stbiw_zhash(unsigned char *data)
 {
    stbiw_uint32 hash = data[0] + (data[1] << 8) + (data[2] << 16);
    hash ^= hash << 3;
@@ -715,21 +715,21 @@ static unsigned int stbiw__zhash(unsigned char *data)
    return hash;
 }
 
-#define stbiw__zlib_flush() (out = stbiw__zlib_flushf(out, &bitbuf, &bitcount))
-#define stbiw__zlib_add(code,codebits) \
-      (bitbuf |= (code) << bitcount, bitcount += (codebits), stbiw__zlib_flush())
-#define stbiw__zlib_huffa(b,c)  stbiw__zlib_add(stbiw__zlib_bitrev(b,c),c)
+#define stbiw_zlib_flush() (out = stbiw_zlib_flushf(out, &bitbuf, &bitcount))
+#define stbiw_zlib_add(code,codebits) \
+      (bitbuf |= (code) << bitcount, bitcount += (codebits), stbiw_zlib_flush())
+#define stbiw_zlib_huffa(b,c)  stbiw_zlib_add(stbiw_zlib_bitrev(b,c),c)
 // default huffman tables
-#define stbiw__zlib_huff1(n)  stbiw__zlib_huffa(0x30 + (n), 8)
-#define stbiw__zlib_huff2(n)  stbiw__zlib_huffa(0x190 + (n)-144, 9)
-#define stbiw__zlib_huff3(n)  stbiw__zlib_huffa(0 + (n)-256,7)
-#define stbiw__zlib_huff4(n)  stbiw__zlib_huffa(0xc0 + (n)-280,8)
-#define stbiw__zlib_huff(n)  ((n) <= 143 ? stbiw__zlib_huff1(n) : (n) <= 255 ? stbiw__zlib_huff2(n) : (n) <= 279 ? stbiw__zlib_huff3(n) : stbiw__zlib_huff4(n))
-#define stbiw__zlib_huffb(n) ((n) <= 143 ? stbiw__zlib_huff1(n) : stbiw__zlib_huff2(n))
+#define stbiw_zlib_huff1(n)  stbiw_zlib_huffa(0x30 + (n), 8)
+#define stbiw_zlib_huff2(n)  stbiw_zlib_huffa(0x190 + (n)-144, 9)
+#define stbiw_zlib_huff3(n)  stbiw_zlib_huffa(0 + (n)-256,7)
+#define stbiw_zlib_huff4(n)  stbiw_zlib_huffa(0xc0 + (n)-280,8)
+#define stbiw_zlib_huff(n)  ((n) <= 143 ? stbiw_zlib_huff1(n) : (n) <= 255 ? stbiw_zlib_huff2(n) : (n) <= 279 ? stbiw_zlib_huff3(n) : stbiw_zlib_huff4(n))
+#define stbiw_zlib_huffb(n) ((n) <= 143 ? stbiw_zlib_huff1(n) : stbiw_zlib_huff2(n))
 
-#define stbiw__ZHASH   16384
+#define stbiw_zHASH   16384
 
-unsigned char * stbi_zlib_compress(unsigned char *data, int data_len, int *out_len, int quality)
+unsigned char * stbizlib_compress(unsigned char *data, int data_len, int *out_len, int quality)
 {
    static unsigned short lengthc[] = { 3,4,5,6,7,8,9,10,11,13,15,17,19,23,27,31,35,43,51,59,67,83,99,115,131,163,195,227,258, 259 };
    static unsigned char  lengtheb[]= { 0,0,0,0,0,0,0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4,  4,  5,  5,  5,  5,  0 };
@@ -738,27 +738,27 @@ unsigned char * stbi_zlib_compress(unsigned char *data, int data_len, int *out_l
    unsigned int bitbuf=0;
    int i,j, bitcount=0;
    unsigned char *out = NULL;
-   unsigned char ***hash_table = (unsigned char***) STBIW_MALLOC(stbiw__ZHASH * sizeof(char**));
+   unsigned char ***hash_table = (unsigned char***) STBIW_MALLOC(stbiw_zHASH * sizeof(char**));
    if (quality < 5) quality = 5;
 
    stbiw__sbpush(out, 0x78);   // DEFLATE 32K window
    stbiw__sbpush(out, 0x5e);   // FLEVEL = 1
-   stbiw__zlib_add(1,1);  // BFINAL = 1
-   stbiw__zlib_add(1,2);  // BTYPE = 1 -- fixed huffman
+   stbiw_zlib_add(1,1);  // BFINAL = 1
+   stbiw_zlib_add(1,2);  // BTYPE = 1 -- fixed huffman
 
-   for (i=0; i < stbiw__ZHASH; ++i)
+   for (i=0; i < stbiw_zHASH; ++i)
       hash_table[i] = NULL;
 
    i=0;
    while (i < data_len-3) {
       // hash next 3 bytes of data to be compressed
-      int h = stbiw__zhash(data+i)&(stbiw__ZHASH-1), best=3;
+      int h = stbiw_zhash(data+i)&(stbiw_zHASH-1), best=3;
       unsigned char *bestloc = 0;
       unsigned char **hlist = hash_table[h];
       int n = stbiw__sbcount(hlist);
       for (j=0; j < n; ++j) {
          if (hlist[j]-data > i-32768) { // if entry lies within window
-            int d = stbiw__zlib_countm(hlist[j], data+i, data_len-i);
+            int d = stbiw_zlib_countm(hlist[j], data+i, data_len-i);
             if (d >= best) best=d,bestloc=hlist[j];
          }
       }
@@ -771,12 +771,12 @@ unsigned char * stbi_zlib_compress(unsigned char *data, int data_len, int *out_l
 
       if (bestloc) {
          // "lazy matching" - check match at *next* byte, and if it's better, do cur byte as literal
-         h = stbiw__zhash(data+i+1)&(stbiw__ZHASH-1);
+         h = stbiw_zhash(data+i+1)&(stbiw_zHASH-1);
          hlist = hash_table[h];
          n = stbiw__sbcount(hlist);
          for (j=0; j < n; ++j) {
             if (hlist[j]-data > i-32767) {
-               int e = stbiw__zlib_countm(hlist[j], data+i+1, data_len-i-1);
+               int e = stbiw_zlib_countm(hlist[j], data+i+1, data_len-i-1);
                if (e > best) { // if next match is better, bail on current match
                   bestloc = NULL;
                   break;
@@ -789,26 +789,26 @@ unsigned char * stbi_zlib_compress(unsigned char *data, int data_len, int *out_l
          int d = (int) (data+i - bestloc); // distance back
          STBIW_ASSERT(d <= 32767 && best <= 258);
          for (j=0; best > lengthc[j+1]-1; ++j);
-         stbiw__zlib_huff(j+257);
-         if (lengtheb[j]) stbiw__zlib_add(best - lengthc[j], lengtheb[j]);
+         stbiw_zlib_huff(j+257);
+         if (lengtheb[j]) stbiw_zlib_add(best - lengthc[j], lengtheb[j]);
          for (j=0; d > distc[j+1]-1; ++j);
-         stbiw__zlib_add(stbiw__zlib_bitrev(j,5),5);
-         if (disteb[j]) stbiw__zlib_add(d - distc[j], disteb[j]);
+         stbiw_zlib_add(stbiw_zlib_bitrev(j,5),5);
+         if (disteb[j]) stbiw_zlib_add(d - distc[j], disteb[j]);
          i += best;
       } else {
-         stbiw__zlib_huffb(data[i]);
+         stbiw_zlib_huffb(data[i]);
          ++i;
       }
    }
    // write out final bytes
    for (;i < data_len; ++i)
-      stbiw__zlib_huffb(data[i]);
-   stbiw__zlib_huff(256); // end of block
+      stbiw_zlib_huffb(data[i]);
+   stbiw_zlib_huff(256); // end of block
    // pad with 0 bits to byte boundary
    while (bitcount)
-      stbiw__zlib_add(0,1);
+      stbiw_zlib_add(0,1);
 
-   for (i=0; i < stbiw__ZHASH; ++i)
+   for (i=0; i < stbiw_zHASH; ++i)
       (void) stbiw__sbfree(hash_table[i]);
    STBIW_FREE(hash_table);
 
@@ -951,7 +951,7 @@ unsigned char *stbi_write_png_to_mem(unsigned char *pixels, int stride_bytes, in
       STBIW_MEMMOVE(filt+j*(x*n+1)+1, line_buffer, x*n);
    }
    STBIW_FREE(line_buffer);
-   zlib = stbi_zlib_compress(filt, y*( x*n+1), &zlen, 8); // increase 8 to get smaller but use more memory
+   zlib = stbizlib_compress(filt, y*( x*n+1), &zlen, 8); // increase 8 to get smaller but use more memory
    STBIW_FREE(filt);
    if (!zlib) return 0;
 

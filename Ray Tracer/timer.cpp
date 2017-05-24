@@ -21,12 +21,27 @@ using namespace std::chrono;
 
 	timer::timer()
 	{
-		init();
+		mCounter = 0;
+		mFPS = 0;
+		mFrameCounter = 0;
 	}
 
 
 	void timer::init()
 	{
+		mCounter = 0;
+		mFPS = 0;
+	}
+
+
+	void timer::start() {
+		mLast = mClock::now();
+		mLastTime = mClock::now();
+	}
+
+
+	void timer::reset() {
+		
 		mLast = mClock::now();
 		mLastTime = mClock::now();
 
@@ -46,24 +61,24 @@ using namespace std::chrono;
 		//Updating fps
 
 		mCounter++;
+
+		mFrameCounter++;
 		if (in_seconds(mCurrent - mLastTime) > 1.0f)
 		{
-			mFPS = mCounter;
-			mCounter = 0;
+			mFPS = mFrameCounter;
+			mFrameCounter = 0;
 			mLastTime = mCurrent;
 		}
 
 	}
 
-	std::string timer::get_current_time_and_date()
-		{
+	std::string timer::get_current_time_and_date() {
 			auto now = std::chrono::system_clock::now();
 			auto in_time_t = std::chrono::system_clock::to_time_t(now);
 
 			std::stringstream ss;
 			ss << std::put_time(std::localtime(&in_time_t), "%Y-%m-%d %X");
 			return ss.str();
-		
-
+	
 	}
 

@@ -9,36 +9,42 @@
 #include"object.h"
 #include"sphere.h"
 #include"global_settings.h"
+#include"random.h"
+#include<memory>
 
 
 
 class ray_tracer {
 	
+	//compile-time constants
+	static const int MAX_RAY_DEPTH = 1;
+	static const int MAX_AA_SAMPLES = 50;
+
+	std::shared_ptr<random> mRandInst;
 	std::thread* mThreads;
 	int mMaxThreads;
 	int mImageWidth;
 	int mImageHeight;
 	float mAspectRatio;
 	float mFOV;
+	float mTanHalfFOV;
 	unsigned char* mFrameBuffer;
 	vec3 mLightPosition;
 	std::vector<sphere*> mSpheres;
 
-	int mMaxRayDepth;
-	int mCurrectRecDepth;
-
+	//states
 	vec3 mCameraPosition;
-
-	ray* preCompRays;
-	
 
 public:
 
 	
 	
-	ray_tracer(int pImageWidth,int pImageHeight,int pMaxRecDepth);
+	ray_tracer(int pImageWidth,
+		int pImageHeight);
+
 	~ray_tracer();
-	ray compute_ray(int row,int col);
+	ray compute_ray(int row, int col);
+	ray compute_ray_for_aa(float row,float col);
 	vec3 compute_color(const ray& r,int depth);
 	void put_pixel_with_thread(int threadIndex);
 	void put_pixel();

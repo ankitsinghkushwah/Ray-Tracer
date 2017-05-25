@@ -4,9 +4,6 @@ vec3 reflect(vec3 n, vec3 v) {
 	return (v - (2 *dot(v,n))*n);
 }
 
-vec3 refract(vec3 normal, vec3 lightDir) {
-
-}
 
 
 float Q_rsqrt(float number)

@@ -9,7 +9,16 @@ class vec3
 {
 public:
 
-	float x, y, z;
+	union {
+
+		struct {
+			float x, y, z;
+		};
+
+		struct {
+			float r, g, b;
+		};
+	};
 
 
 	//normalized directions
@@ -42,10 +51,10 @@ public:
   }
 
   //vec3-vec3 arithmetic operations
-  inline vec3 operator += (const vec3& other) const {
-	  return vec3(x + other.x,
-		  y + other.y,
-		  z + other.z);
+  inline void operator += (const vec3& other) {
+	  x += other.x;
+	  y += other.y;
+	  z += other.z;
   }
 
 

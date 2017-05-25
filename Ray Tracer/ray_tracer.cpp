@@ -11,65 +11,72 @@
 #include"stb_image_write.h"
 
 
+/*
+macros for enable and 
+disable functionality,better than
+if-else statements
+*/
+
 #define USE_THREADS
-//#define DEBUG_NORMALS
+//#define ANTI_ALIAS
+#define CORRECT_GAMMA
 
 
-
-ray_tracer::ray_tracer(int pImageWidth, int pImageHeight,int pMaxRecDepth)
+ray_tracer::ray_tracer(
+	int pImageWidth,
+	int pImageHeight)
 	:
 	mImageWidth(pImageWidth),
-	mImageHeight(pImageHeight),
-	mMaxRayDepth(pMaxRecDepth),
-	mCameraPosition(0.0f),
-	mLightPosition(0.0f,10.0f,10.0f),
-	mCurrectRecDepth(0)
+	mImageHeight(pImageHeight)
+
 {
-	auto rand = random::getInstance();
-	mFrameBuffer = new unsigned char[mImageWidth*mImageHeight*3];
-	preCompRays = new ray[mImageWidth*mImageHeight];
+
+	mCameraPosition = vec3(0.0f);
+	mLightPosition = vec3(0.0f, 10.0f, 10.0f);
+
+	mRandInst = random::getInstance();
+	mFrameBuffer = new unsigned char[mImageWidth*mImageHeight * 3];
 	mMaxThreads = std::thread::hardware_concurrency();
 	mThreads = new std::thread[mMaxThreads];
 
-	
-	mSpheres.push_back(new sphere(vec3(0.0f, -100.5f, -1.0f), 100.0f, vec3(.5,.5,.5),global_settings::MATERIAL::REFLECTIVE));
-	mSpheres.push_back(new sphere(
-		vec3(0.0f, 0.0f, -1.0f), 
-		.5f, vec3(1.0f, 0.0f, 0.0f),
-		global_settings::MATERIAL::REFLECTIVE));
 
-	mSpheres.push_back(new sphere(vec3(-2.0f, 0.0f, -2.0f), .5f, vec3(0.0, 1.0, 0.0), global_settings::MATERIAL::REFLECTIVE));
-	mSpheres.push_back(new sphere(vec3(2.0f, 0.0f, -2.0f), 0.5f, vec3(0.0f, 0.0f, 1.0f), global_settings::MATERIAL::REFLECTIVE));
-	
+	mSpheres.push_back(new sphere(vec3(0.0f, -100.5f, -1.0f), 100.0f, vec3(.3, .3, .3), global_settings::MATERIAL::REFLECTIVE));
+	mSpheres.push_back(new sphere(vec3(0.0f, 0.0f, -1.0f), .5f, vec3(.6f, 0.0f, 0.0f), global_settings::MATERIAL::REFLECTIVE));
+	mSpheres.push_back(new sphere(vec3(-1.5f, 0.0f, -1.5f), .5f, vec3(0.0, .6, 0.0), global_settings::MATERIAL::REFLECTIVE));
+	mSpheres.push_back(new sphere(vec3(1.5f, 0.0f, -1.5f), 0.5f, vec3(0.0f, 0.0f, 1.0f), global_settings::MATERIAL::REFLECTIVE));
+	mSpheres.push_back(new sphere(vec3(-.7f, -0.4f, -.7f), .1f, vec3(0.0, .6, .6), global_settings::MATERIAL::DIFFUSE));
+	mSpheres.push_back(new sphere(vec3(.7f, -0.4f, -.7f), 0.1f, vec3(.6f, 0.0f, .6f), global_settings::MATERIAL::DIFFUSE));
+
 	mAspectRatio = float(mImageWidth) / float(mImageHeight);
 	mFOV = 90.0f;
+	mTanHalfFOV = tan(to_radians(mFOV/double(2.0)));
 
-	for (int row = 0; row < mImageHeight; row++) {
-		for (int col = 0; col < mImageWidth; col++) {
-			preCompRays[row*mImageWidth + col] = compute_ray(row,col);
-		}
-	}
-	
 }
 
 ray_tracer::~ray_tracer()
 {
 	if (mFrameBuffer != nullptr)
 		delete[] mFrameBuffer;
-	
-	delete[] preCompRays;
 	delete[] mThreads;
 }
 
 
 
+ray ray_tracer::compute_ray_for_aa(float row, float col) {
+	float x = (2.0f*((col + .5f) /static_cast<float>(mImageWidth)) - 1.0f);
+	float y = 1.0f - 2.0f*((row + .5f) / static_cast<float>(mImageHeight));
+	x *= mAspectRatio * mTanHalfFOV;
+	y *= mTanHalfFOV;
+	float z = -1.0f;
+	return(ray(mCameraPosition, vec3(x, y, z).normalize()));
+}
+
 
 ray ray_tracer::compute_ray(int row, int col) {
-
-	float x = (2.0f*((col+.5f) / mImageWidth) - 1.0f);
-	float y = 1.0f - 2.0f*((row + .5f) / mImageHeight);
-	x *= mAspectRatio * tan(to_radians(mFOV/2.0f));
-	y *= tan(to_radians(mFOV/2.0f));
+	float x = (2.0f*((col+.5f) / static_cast<float>(mImageWidth)) - 1.0f);
+	float y = 1.0f - 2.0f*((row + .5f) / static_cast<float>(mImageHeight));
+	x *= mAspectRatio * mTanHalfFOV;
+	y *= mTanHalfFOV;
 	float z = -1.0f;
 	return(ray(mCameraPosition,vec3(x,y,z).normalize()));
 }
@@ -110,16 +117,16 @@ vec3 ray_tracer::compute_color(const ray& r,int depth) {
 
 	if (closestSphere != nullptr) 
 	{
-			ray shadowRay(vHitPoint, lightDir);
-
 			bool isInShadow = false;
-			for (auto sphere : mSpheres) {
-				if (sphere->hitOrNot(shadowRay, 0.01, global_settings::MAXFLOAT)) 
-				{
-					isInShadow = true;
-					break;
+
+				ray shadowRay(vHitPoint, lightDir);
+				for (auto sphere : mSpheres) {
+					if (sphere->hitOrNot(shadowRay, 0.01, global_settings::MAXFLOAT))
+					{
+						isInShadow = true;
+						break;
+					}
 				}
-			}
 			
 			
 
@@ -130,10 +137,10 @@ vec3 ray_tracer::compute_color(const ray& r,int depth) {
 			
 				
 				global_settings::MATERIAL objectMat = closestSphere->mat;
-				if (objectMat == global_settings::MATERIAL::DIFFUSE || depth > mMaxRayDepth)
+				if (objectMat == global_settings::MATERIAL::DIFFUSE || depth > MAX_RAY_DEPTH)
 					return finalColor;
 				if(objectMat == global_settings::MATERIAL::REFLECTIVE) {
-					float kr = .5f;
+					float kr = .2f;
 					vec3 reflected = reflect(normal,viewDir).normalize();
 					ray reflectedRay(vHitPoint, reflected);
 					vec3 refColor = compute_color(reflectedRay, depth + 1);
@@ -163,13 +170,33 @@ void ray_tracer::put_pixel_with_thread(int threadIndex)
 				col < ((threadIndex + 1) / float(mMaxThreads))*mImageWidth;
 				++col)
 			{
-				ray r = compute_ray(row,col);
-				vec3 color = compute_color(r,0);
+
+
+
+				vec3 finalColor(0.0f);
+				ray r;
+
+#ifdef ANTI_ALIAS
+				for (int sample = 0; sample < MAX_AA_SAMPLES; sample++) {
+					float u = col + mRandInst->real(0,1);
+					float v = row + mRandInst->real(0,1);
+					r = compute_ray_for_aa(v, u);
+					finalColor += compute_color(r, 0);
+				}
+					finalColor /= float(MAX_AA_SAMPLES);
+#else
+				r = compute_ray(row,col);
+				finalColor = compute_color(r,0);
+#endif
+				
+#ifdef CORRECT_GAMMA
+					finalColor = vec3(sqrt(finalColor.r), sqrt(finalColor.g), sqrt(finalColor.b));
+#endif
 				
 				int index = ((row * mImageWidth) + col) * 3;
-				mFrameBuffer[index] = 255.99*color.x;
-				mFrameBuffer[index + 1] = 255.99*color.y;
-				mFrameBuffer[index + 2] = 255.99*color.z;
+				mFrameBuffer[index] = 255.99*finalColor.r;
+				mFrameBuffer[index + 1] = 255.99*finalColor.g;
+				mFrameBuffer[index + 2] = 255.99*finalColor.b;
 			}
 	}
 
@@ -220,7 +247,7 @@ void ray_tracer::render()
 
 void ray_tracer::updateCameraPos(int key, float dt)
 {
-	float speed = 1.0f;
+	float speed = 4.0f;
 
 	switch (key) {
 	case global_settings::KEYS::UP:
@@ -248,7 +275,7 @@ void ray_tracer::updateCameraPos(int key, float dt)
 
 void ray_tracer::updateLightPos(int key, float dt)
 {
-	float speed = 1.0f;
+	float speed = 7.0f;
 
 	switch (key) {
 	case global_settings::KEYS::UP:

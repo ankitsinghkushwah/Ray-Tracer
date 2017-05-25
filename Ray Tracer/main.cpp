@@ -19,7 +19,8 @@
 //display device context
 HDC hDisplayDC = nullptr;
 float dt = 0.0f;
-ray_tracer rt(global_settings::window_width, global_settings::window_height,2);
+
+ray_tracer rt(global_settings::window_width, global_settings::window_height);
 
 LPCWSTR title = L"Ray Tracer v1.0";
 

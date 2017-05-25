@@ -20,8 +20,6 @@ inline float max(float first, float second) {
 
 vec3 reflect(vec3 normal, vec3 lightDir);
 
-vec3 refract(vec3 normal, vec3 lightDir);
-
 float Q_rsqrt(float number);
 
 

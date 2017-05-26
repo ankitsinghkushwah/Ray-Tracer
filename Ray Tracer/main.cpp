@@ -11,6 +11,7 @@
 #include"global_settings.h"
 #include"logger.h"
 #include"ray_tracer.h"
+#include"enum_classes.h"
 
 //Exposing namespaces
 
@@ -145,50 +146,50 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 			break;
 
 		case VK_UP:
-			rt.updateCameraPos(global_settings::FORWARD, dt);
+			rt.updateCameraPos(Direction::FORWARD, dt);
 			break;
 
 		case VK_DOWN:
-			rt.updateCameraPos(global_settings::BACKWARD, dt);
+			rt.updateCameraPos(Direction::BACKWARD, dt);
 			break;
 
 		case VK_LEFT:
-			rt.updateCameraPos(global_settings::LEFT, dt);
+			rt.updateCameraPos(Direction::LEFT, dt);
 			break;
 
 		case VK_RIGHT:
-			rt.updateCameraPos(global_settings::RIGHT, dt);
+			rt.updateCameraPos(Direction::RIGHT, dt);
 			break;
 		case 0x4E:
-			rt.updateCameraPos(global_settings::UP, dt);
+			rt.updateCameraPos(Direction::UP, dt);
 			break;
 
 		case 0x4D:
-			rt.updateCameraPos(global_settings::DOWN, dt);
+			rt.updateCameraPos(Direction::DOWN, dt);
 			break;
 
 		case 0x41://key A
-			rt.updateLightPos(global_settings::LEFT, dt);
+			rt.updateLightPos(Direction::LEFT, dt);
 			break;
 
 		case 0x44://key D
-			rt.updateLightPos(global_settings::RIGHT, dt);
+			rt.updateLightPos(Direction::RIGHT, dt);
 			break;
 
 		case 0x53: //key S
-			rt.updateLightPos(global_settings::BACKWARD, dt);
+			rt.updateLightPos(Direction::BACKWARD, dt);
 			break;
 
 		case 0x57: //key W
-			rt.updateLightPos(global_settings::FORWARD, dt);
+			rt.updateLightPos(Direction::FORWARD, dt);
 			break;
 
 		case 0x51: //key S
-			rt.updateLightPos(global_settings::UP, dt);
+			rt.updateLightPos(Direction::UP, dt);
 			break;
 
 		case 0x45: //key W
-			rt.updateLightPos(global_settings::DOWN, dt);
+			rt.updateLightPos(Direction::DOWN, dt);
 			break;
 		}
 

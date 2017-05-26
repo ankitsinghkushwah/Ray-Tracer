@@ -4,30 +4,31 @@
 #include"vec3.h"
 #include"ray.h"
 #include"object.h"
-#include"global_settings.h"
+#include"enum_classes.h"
 
-class sphere {
+class sphere : public object{
 
 private:
 
   vec3 mCenter;
   float mRadius;
   vec3 mColor;
-  
 
 public:
 
-	global_settings::MATERIAL mat;
-  sphere(const vec3& pCenter,float pRadius,const vec3& pColor,global_settings::MATERIAL material);
-  inline vec3 getCenter() { return mCenter; }
-  inline float getRadius() { return mRadius; }
-  inline void setCenter(const vec3& pCenter) { mCenter = pCenter; }
-  inline void setRadius(float pRadius) { mRadius = pRadius; }
   
-  bool hit(const ray& r, double& hitPoint,vec3& normal,double tMin,double tMax);
-  bool hitOrNot(const ray& r,float tMin,float tMax);
+  sphere(const vec3& pCenter,
+	  float pRadius,
+	  const vec3& pColor,
+	  Material pMatType,
+	  ShapeID pID);
 
-  vec3 get_color(){ return mColor; }
+  virtual bool hit(const ray& r, float tMin,float tMax,hit_record& hitRec)override;
+  virtual bool hit_or_miss(const ray& r,float tMin,float tMax) override;
+
+  virtual vec3 get_color() override{ return mColor; }
+  virtual Material get_material_type() override { return mMatType; }
+  virtual ShapeID get_id() override { return mID; }
 
 
 };

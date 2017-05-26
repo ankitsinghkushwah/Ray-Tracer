@@ -58,7 +58,16 @@
     <ClInclude Include="math.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="material.h">
+    <ClInclude Include="enum_classes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="hit_record.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="light.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="camera.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -94,6 +103,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="math.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="object.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

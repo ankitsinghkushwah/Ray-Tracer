@@ -9,6 +9,9 @@
 #include"global_settings.h"
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include"stb_image_write.h"
+#include"hit_record.h"
+#include"enum_classes.h"
+#include"logger.h"
 
 
 /*
@@ -17,7 +20,6 @@ disable functionality,better than
 if-else statements
 */
 
-#define USE_THREADS
 //#define ANTI_ALIAS
 #define CORRECT_GAMMA
 
@@ -31,25 +33,29 @@ ray_tracer::ray_tracer(
 
 {
 
-	mCameraPosition = vec3(0.0f);
-	mLightPosition = vec3(0.0f, 10.0f, 10.0f);
+	mCamera.mPosition = vec3(0.0f);
+	mLight.mPosition = vec3(0.0f, 10.0f, 10.0f);
 
 	mRandInst = random::getInstance();
 	mFrameBuffer = new unsigned char[mImageWidth*mImageHeight * 3];
 	mMaxThreads = std::thread::hardware_concurrency();
 	mThreads = new std::thread[mMaxThreads];
 
+	float planeY = -.8;
+	auto getY = [&](float pY,float radius)->float { return  pY + radius; };
 
-	mSpheres.push_back(new sphere(vec3(0.0f, -100.5f, -1.0f), 100.0f, vec3(.3, .3, .3), global_settings::MATERIAL::REFLECTIVE));
-	mSpheres.push_back(new sphere(vec3(0.0f, 0.0f, -1.0f), .5f, vec3(.6f, 0.0f, 0.0f), global_settings::MATERIAL::REFLECTIVE));
-	mSpheres.push_back(new sphere(vec3(-1.5f, 0.0f, -1.5f), .5f, vec3(0.0, .6, 0.0), global_settings::MATERIAL::REFLECTIVE));
-	mSpheres.push_back(new sphere(vec3(1.5f, 0.0f, -1.5f), 0.5f, vec3(0.0f, 0.0f, 1.0f), global_settings::MATERIAL::REFLECTIVE));
-	mSpheres.push_back(new sphere(vec3(-.7f, -0.4f, -.7f), .1f, vec3(0.0, .6, .6), global_settings::MATERIAL::DIFFUSE));
-	mSpheres.push_back(new sphere(vec3(.7f, -0.4f, -.7f), 0.1f, vec3(.6f, 0.0f, .6f), global_settings::MATERIAL::DIFFUSE));
+	mObjects.push_back(new plane(vec3(0.0f, 1.0f, 0.0f),vec3(0.0f,planeY,0.0f),vec3(.8,0.8,0.8),Material::DIFFUSE,ShapeID::PLANE));
+	mObjects.push_back(new sphere(vec3(0.0f, getY(planeY,.5), -1.0f), .5f, vec3(1.0f, 0.0f, 0.0f), Material::REFLECTIVE, ShapeID::SPHERE));
+	mObjects.push_back(new sphere(vec3(-1.5f, getY(planeY, .5), -1.5f), .5f, vec3(0.0, 1.0, 0.0), Material::REFLECTIVE, ShapeID::SPHERE));
+	mObjects.push_back(new sphere(vec3(1.5f, getY(planeY, .5), -1.5f), 0.5f, vec3(0.0f, 0.0f, 1.0f), Material::REFLECTIVE, ShapeID::SPHERE));
+	mObjects.push_back(new sphere(vec3(-.7f, getY(planeY, .1), -.7f), .1f, vec3(0.0, 1.0, 1.0), Material::DIFFUSE, ShapeID::SPHERE));
+	mObjects.push_back(new sphere(vec3(.7f, getY(planeY, .1), -.7f), 0.1f, vec3(1.0f, 0.0f, 1.0), Material::DIFFUSE, ShapeID::SPHERE));
+
+	
 
 	mAspectRatio = float(mImageWidth) / float(mImageHeight);
 	mFOV = 90.0f;
-	mTanHalfFOV = tan(to_radians(mFOV/double(2.0)));
+	mTanHalfFOV = tan(to_radians(mFOV/float(2.0)));
 
 }
 
@@ -68,7 +74,7 @@ ray ray_tracer::compute_ray_for_aa(float row, float col) {
 	x *= mAspectRatio * mTanHalfFOV;
 	y *= mTanHalfFOV;
 	float z = -1.0f;
-	return(ray(mCameraPosition, vec3(x, y, z).normalize()));
+	return(ray(mCamera.mPosition, vec3(x, y, z).normalize()));
 }
 
 
@@ -78,26 +84,23 @@ ray ray_tracer::compute_ray(int row, int col) {
 	x *= mAspectRatio * mTanHalfFOV;
 	y *= mTanHalfFOV;
 	float z = -1.0f;
-	return(ray(mCameraPosition,vec3(x,y,z).normalize()));
+	return(ray(mCamera.mPosition,vec3(x,y,z).normalize()));
 }
 
 
 
 vec3 ray_tracer::compute_color(const ray& r,int depth) {
-
-	double t = 0.0f;
-	vec3 normal; 
-	double closestSoFar = global_settings::MAXFLOAT;
-	sphere* closestSphere = nullptr;
-
+	float closestSoFar = global_settings::MAXFLOAT;
+	object* closestObject = nullptr;
+	hit_record hitRec;
 	
 
-	/* checking if ray r is intersecting with any of the sphere in the scene*/
-	for (auto sphere : mSpheres) {
-		if (sphere->hit(r, t,normal, 0.01, closestSoFar)) {
-			if (t < closestSoFar){
-				closestSoFar = t;
-				closestSphere = sphere;
+	/* checking if ray r is intersecting with any of the object in the scene*/
+	for (auto object : mObjects) {
+		if (object->hit(r,0.01,closestSoFar,hitRec)) {
+			if (hitRec.t < closestSoFar){
+				closestSoFar = hitRec.t;
+				closestObject = object;
 			}
 		}
 	}
@@ -111,41 +114,44 @@ vec3 ray_tracer::compute_color(const ray& r,int depth) {
 	otherwise color it with sphere color.
 	*/
 
-	vec3 vHitPoint = r.point_at_parameter(closestSoFar);
-	vec3 lightDir = (mLightPosition - vHitPoint).normalize();
-	vec3 viewDir = (vHitPoint - mCameraPosition).normalize();
+	vec3 vHitPoint = hitRec.hitPoint;
+	vec3 lightDir = (mLight.mPosition - vHitPoint).normalize();
+	vec3 viewDir = (vHitPoint - mCamera.mPosition).normalize();
 
-	if (closestSphere != nullptr) 
+	if (closestObject != nullptr)
 	{
-			bool isInShadow = false;
+		bool isInShadow = false;
 
-				ray shadowRay(vHitPoint, lightDir);
-				for (auto sphere : mSpheres) {
-					if (sphere->hitOrNot(shadowRay, 0.01, global_settings::MAXFLOAT))
-					{
-						isInShadow = true;
-						break;
-					}
+		
+			ray shadowRay(vHitPoint, lightDir);
+			for (auto object : mObjects)
+			{
+				if (object->hit_or_miss(shadowRay, 0.01, global_settings::MAXFLOAT))
+				{
+					isInShadow = true;
+					break;
 				}
-			
-			
+			}
+		
 
-			if (isInShadow)
-				return vec3(0.0f);
-			else {
-				vec3 finalColor = (closestSphere->get_color()*max(0.0f, dot(normal, lightDir)));
+			vec3 finalColor = (closestObject->get_color()*max(0.0f, dot(hitRec.normal, lightDir)));
 			
+			if (isInShadow)
+				return finalColor*.02;
+			else {
 				
-				global_settings::MATERIAL objectMat = closestSphere->mat;
-				if (objectMat == global_settings::MATERIAL::DIFFUSE || depth > MAX_RAY_DEPTH)
+
+				Material objectMat = closestObject->get_material_type();
+
+				if (Material::DIFFUSE == objectMat || depth > MAX_RAY_DEPTH)
 					return finalColor;
-				if(objectMat == global_settings::MATERIAL::REFLECTIVE) {
-					float kr = .2f;
-					vec3 reflected = reflect(normal,viewDir).normalize();
+				else if(Material::REFLECTIVE == objectMat) {
+					float kr = .8f; //how much to blend?
+					vec3 reflected = reflect(hitRec.normal,viewDir).normalize();
 					ray reflectedRay(vHitPoint, reflected);
 					vec3 refColor = compute_color(reflectedRay, depth + 1);
 					//blending the colors
-					return (1 - kr)*finalColor + (kr*refColor);
+					return (1 - kr)*refColor + (kr*finalColor);
 				}
 			}
 				
@@ -161,7 +167,7 @@ vec3 ray_tracer::compute_color(const ray& r,int depth) {
 }
 
 
-void ray_tracer::put_pixel_with_thread(int threadIndex)
+void ray_tracer::put_pixel(int threadIndex)
 {
 
 	for (int row = 0; row <mImageHeight; ++row)
@@ -170,8 +176,6 @@ void ray_tracer::put_pixel_with_thread(int threadIndex)
 				col < ((threadIndex + 1) / float(mMaxThreads))*mImageWidth;
 				++col)
 			{
-
-
 
 				vec3 finalColor(0.0f);
 				ray r;
@@ -205,96 +209,71 @@ void ray_tracer::put_pixel_with_thread(int threadIndex)
 
 
 
-void ray_tracer::put_pixel() {
-	
-	for (int row = 0; row <mImageHeight; ++row)
-	{
-		for (int col = 0; col <mImageWidth; ++col)
-		{
-
-			ray r = compute_ray(row, col);
-			vec3 color = compute_color(r,0);
-
-			int index = ((row * mImageWidth) + col) * 3;
-			mFrameBuffer[index] = int(255.99*color.x);
-			mFrameBuffer[index + 1] = int(255.99*color.y);
-			mFrameBuffer[index + 2] = int(255.99*color.z);
-		}
-	}
-}
 
 void ray_tracer::render()
 {
-
-#ifdef USE_THREADS
-
 	for (int threadIndex = 0; threadIndex < mMaxThreads; ++threadIndex) {
-		mThreads[threadIndex] = std::thread(&ray_tracer::put_pixel_with_thread, this, threadIndex);
+		mThreads[threadIndex] = std::thread(&ray_tracer::put_pixel, this, threadIndex);
 	}
-
 	for (int threadIndex = 0; threadIndex < mMaxThreads; ++threadIndex) {
 		if (mThreads[threadIndex].joinable())
 			mThreads[threadIndex].join();
 	}
-
-#else
-	put_pixel(); //uses single thread
-
-#endif
-
 	stbi_write_bmp("result.bmp",mImageWidth,mImageHeight,3,mFrameBuffer);
 }
 
-void ray_tracer::updateCameraPos(int key, float dt)
+void ray_tracer::updateCameraPos(Direction direction, float dt)
 {
 	float speed = 4.0f;
 
-	switch (key) {
-	case global_settings::KEYS::UP:
-		mCameraPosition = mCameraPosition + (vec3::UP * speed * dt);
+	switch (direction) {
+
+	/*case Direction::UP:
+		mCamera.mPosition = mCamera.mPosition + (vec3::UP * speed * dt);
 		break;
-	case global_settings::KEYS::DOWN:
-		mCameraPosition = mCameraPosition + (vec3::DOWN * speed * dt);
+	case Direction::DOWN:
+		mCamera.mPosition = mCamera.mPosition + (vec3::DOWN * speed * dt);*/
 		break;
-	case global_settings::KEYS::LEFT:
-		mCameraPosition = mCameraPosition + (vec3::LEFT * speed * dt);
+	case Direction::LEFT:
+		mCamera.mPosition = mCamera.mPosition + (vec3::LEFT * speed * dt);
 		break;
-	case global_settings::KEYS::RIGHT:
-		mCameraPosition = mCameraPosition + (vec3::RIGHT * speed * dt);
+	case Direction::RIGHT:
+		mCamera.mPosition = mCamera.mPosition + (vec3::RIGHT * speed * dt);
 		break;
-	case global_settings::KEYS::FORWARD:
-		mCameraPosition = mCameraPosition + (vec3::FORWARD * speed * dt);
+	case Direction::FORWARD:
+		mCamera.mPosition = mCamera.mPosition + (vec3::FORWARD * speed * dt);
 		break;
-	case global_settings::KEYS::BACKWARD:
-		mCameraPosition = mCameraPosition + (vec3::BACKWARD * speed * dt);
+	case Direction::BACKWARD:
+		mCamera.mPosition = mCamera.mPosition + (vec3::BACKWARD * speed * dt);
 		break;
 	}
 
 }
 
 
-void ray_tracer::updateLightPos(int key, float dt)
+void ray_tracer::updateLightPos(Direction direction, float dt)
 {
 	float speed = 7.0f;
 
-	switch (key) {
-	case global_settings::KEYS::UP:
-		mLightPosition = mLightPosition + (vec3::UP * speed * dt);
+	switch (direction) {
+
+	case Direction::UP:
+		mLight.mPosition = mLight.mPosition + (vec3::UP * speed * dt);
 		break;
-	case global_settings::KEYS::DOWN:
-		mLightPosition = mLightPosition + (vec3::DOWN * speed * dt);
+	case Direction::DOWN:
+		mLight.mPosition = mLight.mPosition + (vec3::DOWN * speed * dt);
 		break;
-	case global_settings::KEYS::LEFT:
-		mLightPosition = mLightPosition + (vec3::LEFT * speed * dt);
+	case Direction::LEFT:
+		mLight.mPosition = mLight.mPosition + (vec3::LEFT * speed * dt);
 		break;
-	case global_settings::KEYS::RIGHT:
-		mLightPosition = mLightPosition + (vec3::RIGHT * speed * dt);
+	case Direction::RIGHT:
+		mLight.mPosition = mLight.mPosition + (vec3::RIGHT * speed * dt);
 		break;
-	case global_settings::KEYS::FORWARD:
-		mLightPosition = mLightPosition + (vec3::FORWARD * speed * dt);
+	case Direction::FORWARD:
+		mLight.mPosition = mLight.mPosition + (vec3::FORWARD * speed * dt);
 		break;
-	case global_settings::KEYS::BACKWARD:
-		mLightPosition = mLightPosition + (vec3::BACKWARD * speed * dt);
+	case Direction::BACKWARD:
+		mLight.mPosition = mLight.mPosition + (vec3::BACKWARD * speed * dt);
 		break;
 	}
 

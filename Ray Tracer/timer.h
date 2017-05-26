@@ -31,7 +31,7 @@
 		void start();
 		void update();
 	
-		inline double get_elapsed_time() const {
+		inline float get_elapsed_time() const {
 			return mElapsedTime;
 		}
 
@@ -51,7 +51,7 @@
 		//for elapsed time
 		mClock::time_point mLast;
 		mClock::time_point mCurrent;
-		double mElapsedTime;
+		float mElapsedTime;
 
 		int mFrameCounter;
 		//For FPS
@@ -60,7 +60,7 @@
 		mClock::time_point mLastTime;
 
 
-		double in_seconds(mClock::duration pDuration) const;
+		float in_seconds(mClock::duration pDuration) const;
 
 		
 	};

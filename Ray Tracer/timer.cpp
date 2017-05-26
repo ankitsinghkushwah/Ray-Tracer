@@ -9,7 +9,7 @@ using namespace std::chrono;
 	//Private functions
 
 
-	double timer::in_seconds(mClock::duration pDuration) const
+	float timer::in_seconds(mClock::duration pDuration) const
 	{
 		return (duration_cast<microseconds>(pDuration).count() / 1000000.0);
 	}

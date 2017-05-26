@@ -1,0 +1,25 @@
+﻿  ray_tracer.cpp
+f:\projects\visual studio 2015\visual c++ project\ray tracer\ray tracer\math.h(6): warning C4305: 'initializing': truncation from 'double' to 'float'
+f:\projects\visual studio 2015\visual c++ project\ray tracer\ray tracer\stb_image_write.h(223): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+  C:\Program Files (x86)\Windows Kits\10\Include\10.0.10240.0\ucrt\stdio.h(205): note: see declaration of 'fopen'
+f:\projects\visual studio 2015\visual c++ project\ray tracer\ray tracer\stb_image_write.h(616): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+  C:\Program Files (x86)\Windows Kits\10\Include\10.0.10240.0\ucrt\stdio.h(1769): note: see declaration of 'sprintf'
+f:\projects\visual studio 2015\visual c++ project\ray tracer\ray tracer\stb_image_write.h(999): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+  C:\Program Files (x86)\Windows Kits\10\Include\10.0.10240.0\ucrt\stdio.h(205): note: see declaration of 'fopen'
+ray_tracer.cpp(44): warning C4305: 'initializing': truncation from 'double' to 'float'
+ray_tracer.cpp(47): warning C4305: 'argument': truncation from 'double' to 'float'
+ray_tracer.cpp(51): warning C4305: 'argument': truncation from 'double' to 'float'
+ray_tracer.cpp(52): warning C4305: 'argument': truncation from 'double' to 'float'
+ray_tracer.cpp(100): warning C4305: 'argument': truncation from 'double' to 'float'
+ray_tracer.cpp(129): warning C4305: 'argument': truncation from 'double' to 'float'
+ray_tracer.cpp(140): warning C4305: 'argument': truncation from 'double' to 'float'
+ray_tracer.cpp(175): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+ray_tracer.cpp(201): warning C4244: '=': conversion from 'double' to 'unsigned char', possible loss of data
+ray_tracer.cpp(202): warning C4244: '=': conversion from 'double' to 'unsigned char', possible loss of data
+ray_tracer.cpp(203): warning C4244: '=': conversion from 'double' to 'unsigned char', possible loss of data
+  Generating code
+  2 of 345 functions ( 0.6%) were compiled, the rest were copied from previous compilation.
+    0 functions were new in current compilation
+    1 functions had inline decision re-evaluated but remain unchanged
+  Finished generating code
+  Ray Tracer.vcxproj -> F:\Projects\visual studio 2015\Visual C++ Project\Ray Tracer\Release\Ray Tracer.exe

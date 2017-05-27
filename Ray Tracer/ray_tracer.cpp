@@ -220,7 +220,7 @@ void ray_tracer::put_pixel(int threadIndex)
 }
 
 
-//renders pixel color to a buffer
+//renders pixel color to the framebuffer
 void ray_tracer::render()
 {
 	for (int threadIndex = 0; threadIndex < mMaxThreads; ++threadIndex) {

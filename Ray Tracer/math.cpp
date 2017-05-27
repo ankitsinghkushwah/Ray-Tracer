@@ -1,10 +1,8 @@
 #include"math.h"
 
-vec3 reflect(vec3 n, vec3 v) {
+vec4 reflect(vec4 n, vec4 v) {
 	return (v - (2 *dot(v,n))*n);
 }
-
-
 
 float Q_rsqrt(float number)
 {

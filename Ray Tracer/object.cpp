@@ -1,8 +1,10 @@
 #include "object.h"
 
-object::object(ShapeID pID,Material pMatType)
+object::object(vec4 pPosition,ShapeID pID,Material pMatType,float pRefFact)
 	:
+	mPosition(pPosition),
 	mID(pID),
-	mMatType(pMatType)
+	mMatType(pMatType),
+	mRefFact(pRefFact)
 {
 }

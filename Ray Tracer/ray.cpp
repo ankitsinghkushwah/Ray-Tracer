@@ -10,13 +10,12 @@ ray::ray()
 
 }
 
-ray::ray(const vec3 & pOrigin, const vec3 & pDirection)
+ray::ray(const vec4 & pOrigin, const vec4 & pDirection)
   :
   mOrigin(pOrigin),
   mDirection(pDirection)
 {
 }
-
 
 ray::~ray()
 {

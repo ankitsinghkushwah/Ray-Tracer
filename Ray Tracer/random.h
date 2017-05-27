@@ -7,7 +7,7 @@
 #include<chrono>
 #include<memory>
 
-#include"vec3.h"
+#include"vec4.h"
 
 
 
@@ -31,7 +31,7 @@
 
 		int integer(int pMin, int pMax);
 
-    vec3 inside_unit_sphere();
+    vec4 inside_unit_sphere();
 
 
 	private:

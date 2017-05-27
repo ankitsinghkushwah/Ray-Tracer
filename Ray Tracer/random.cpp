@@ -34,10 +34,10 @@ using namespace std;
 	}
 
 
-  vec3 random::inside_unit_sphere() {
-    vec3 p;
+  vec4 random::inside_unit_sphere() {
+    vec4 p;
     do {
-      p = vec3(real(-1.0f, 1.0f), real(-1.0f, 1.0f), real(-1.0f, 1.0f));
+      p = vec4(real(-1.0f, 1.0f), real(-1.0f, 1.0f), real(-1.0f, 1.0f));
     } while (p.squared_length() >= 1.0);
 
     return p;

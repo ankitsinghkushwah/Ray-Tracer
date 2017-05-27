@@ -28,7 +28,7 @@ LPCWSTR title = L"Ray Tracer v1.0";
 
 //forward declarations of functions
 
-bool LoadAndBlitBitmap(LPCWSTR szFileName, HDC hWinDC,HDC hLocalDC);
+bool loadAndDrawBitmap(LPCWSTR szFileName, HDC hWinDC,HDC hLocalDC);
 
 
 
@@ -99,7 +99,7 @@ int WINAPI WinMain(HINSTANCE hInstance,
 
 	rtTimer.start();
 
-	int sigmaFPS = 0;
+	float sigmaDeltaTime = 0.0f;
 
   while (true)
   {
@@ -110,7 +110,9 @@ int WINAPI WinMain(HINSTANCE hInstance,
       DispatchMessage(&msg);
       if (msg.message == WM_QUIT)
       {
-		//  rtLogger.log("average FPS : %f", float(sigmaFPS/rtTimer.get_frame_count()));
+		  int totalFrames = rtTimer.get_frame_count();
+		  float averageDeltaTime = sigmaDeltaTime / float(totalFrames);
+		  rtLogger.log("\n average FPS : %f", float(1.0f/averageDeltaTime));
         break;
       }
     } 
@@ -118,9 +120,10 @@ int WINAPI WinMain(HINSTANCE hInstance,
     {
 		rtTimer.update();
 		dt =  rtTimer.get_elapsed_time();
-		rtLogger.log("FPS : %d", rtTimer.get_FPS());
+		sigmaDeltaTime += dt;
+		//rtLogger.log("FPS : %d", rtTimer.get_FPS());
 		rt.render();
-        LoadAndBlitBitmap(L"result.bmp",hDisplayDC,hLocalDC);
+        loadAndDrawBitmap(L"result.bmp",hDisplayDC,hLocalDC);
     }
   }
 
@@ -135,6 +138,9 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 
 	case WM_DESTROY:
 		PostQuitMessage(0);
+		break;
+
+	case WM_MOUSEMOVE:
 		break;
 
 	case WM_KEYDOWN:
@@ -168,29 +174,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 			rt.updateCameraPos(Direction::DOWN, dt);
 			break;
 
-		case 0x41://key A
-			rt.updateLightPos(Direction::LEFT, dt);
-			break;
-
-		case 0x44://key D
-			rt.updateLightPos(Direction::RIGHT, dt);
-			break;
-
-		case 0x53: //key S
-			rt.updateLightPos(Direction::BACKWARD, dt);
-			break;
-
-		case 0x57: //key W
-			rt.updateLightPos(Direction::FORWARD, dt);
-			break;
-
-		case 0x51: //key S
-			rt.updateLightPos(Direction::UP, dt);
-			break;
-
-		case 0x45: //key W
-			rt.updateLightPos(Direction::DOWN, dt);
-			break;
+	
 		}
 
 	}
@@ -203,7 +187,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 
 
 
-bool LoadAndBlitBitmap(LPCWSTR szFileName, HDC hWinDC,HDC hLocalDC) {
+bool loadAndDrawBitmap(LPCWSTR szFileName, HDC hWinDC,HDC hLocalDC) {
 	// Load the bitmap image file
 	HBITMAP hBitmap;
 	hBitmap = (HBITMAP)::LoadImage(NULL, szFileName, IMAGE_BITMAP, 0, 0,

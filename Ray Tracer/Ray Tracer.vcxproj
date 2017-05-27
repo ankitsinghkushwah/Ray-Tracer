@@ -158,7 +158,7 @@
     <ClInclude Include="stb_image.h" />
     <ClInclude Include="stb_image_write.h" />
     <ClInclude Include="timer.h" />
-    <ClInclude Include="vec3.h" />
+    <ClInclude Include="vec4.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="global_settings.cpp" />
@@ -172,7 +172,7 @@
     <ClCompile Include="ray_tracer.cpp" />
     <ClCompile Include="sphere.cpp" />
     <ClCompile Include="timer.cpp" />
-    <ClCompile Include="vec3.cpp" />
+    <ClCompile Include="vec4.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

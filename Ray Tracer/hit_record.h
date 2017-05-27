@@ -2,13 +2,13 @@
 #define INC_HIT_RECORD_H
 
 
-#include"vec3.h"
+#include"vec4.h"
 
 
 struct hit_record {
-	vec3 normal;
+	vec4 normal;
 	float t;
-	vec3 hitPoint;
+	vec4 hitPoint;
 };
 
 #endif

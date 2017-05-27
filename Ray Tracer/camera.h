@@ -1,11 +1,11 @@
 #ifndef INC_CAMERA_H
 #define INC_CAMERA_H
 
-#include"vec3.h"
+#include"vec4.h"
 
 struct camera {
-
-	vec3 mPosition;
+	vec4 mPosition;
+	float mFOV;
 };
 
 #endif

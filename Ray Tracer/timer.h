@@ -14,56 +14,34 @@
 #include<iomanip>
 
 
-	class timer
-	{
+class timer
+{
 
-
-	public:
-
-
+public:
 		timer();
-
 		void init();
-
 		inline int get_frame_count() { return mCounter; }
-
+		inline float get_elapsed_time() const {return mElapsedTime;}
+		inline unsigned int get_FPS() const {return mFPS;}
 		void reset();
 		void start();
 		void update();
-	
-		inline float get_elapsed_time() const {
-			return mElapsedTime;
-		}
-
-		inline unsigned int get_FPS() const {
-			return mFPS;
-		}
-
-
 		std::string get_current_time_and_date();
 
-
-	private:
-
+private:
 		typedef std::chrono::high_resolution_clock mClock;
 		typedef std::chrono::microseconds mMicroseconds;
-
 		//for elapsed time
 		mClock::time_point mLast;
 		mClock::time_point mCurrent;
 		float mElapsedTime;
-
 		int mFrameCounter;
 		//For FPS
 		int mFPS;
 		int mCounter;
 		mClock::time_point mLastTime;
-
-
 		float in_seconds(mClock::duration pDuration) const;
-
-		
-	};
+};
 
 
 #endif

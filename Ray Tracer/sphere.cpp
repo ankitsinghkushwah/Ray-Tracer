@@ -3,23 +3,23 @@
 
 //#define USE_USUAL_SQRT
 
-sphere::sphere(const vec3 & pCenter, 
+sphere::sphere(const vec4 & pCenter, 
 	float pRadius, 
-	const vec3& pColor, 
+	const vec4& pColor, 
 	Material pMatType,
-	ShapeID pID)
+	ShapeID pID,
+	float pRefFact)
 	:
-  mCenter(pCenter),
   mRadius(pRadius),
 	mColor(pColor),
-	object(pID,pMatType)
+	object(pCenter,pID,pMatType,pRefFact)
 {
 
 }
 
 bool sphere::hit(const ray & r, float tMin,float tMax,hit_record& hitRec)
 {
-	vec3 oc = r.mOrigin - mCenter;
+	vec4 oc = r.mOrigin - mPosition;
 	float a = 1.0f;
 	float b = 2.0f*dot(oc, r.mDirection);
 	float c = dot(oc, oc) - mRadius*mRadius;
@@ -39,7 +39,7 @@ bool sphere::hit(const ray & r, float tMin,float tMax,hit_record& hitRec)
 		if (t < tMax && t > tMin) {
 			hitRec.t = t;
 			hitRec.hitPoint = r.point_at_parameter(t);
-			hitRec.normal = (hitRec.hitPoint - mCenter) / mRadius;
+			hitRec.normal = (hitRec.hitPoint - mPosition) / mRadius;
 			return true;
 		}
 		//calculating second root if the first root isnt greater than 0
@@ -47,7 +47,7 @@ bool sphere::hit(const ray & r, float tMin,float tMax,hit_record& hitRec)
 		if (t < tMax && t > tMin) {
 			hitRec.t = t;
 			hitRec.hitPoint = r.point_at_parameter(t);
-			hitRec.normal = (hitRec.hitPoint - mCenter) / mRadius;
+			hitRec.normal = (hitRec.hitPoint - mPosition) / mRadius;
 			return true;
 		}
 
@@ -58,7 +58,7 @@ bool sphere::hit(const ray & r, float tMin,float tMax,hit_record& hitRec)
 
 bool sphere::hit_or_miss(const ray & r,float tMin,float tMax)
 {
-	vec3 oc = r.mOrigin - mCenter;
+	vec4 oc = r.mOrigin - mPosition;
 	float a = 1.0f;
 	float b = 2.0f*dot(oc, r.mDirection);
 	float c = dot(oc, oc) - mRadius*mRadius;

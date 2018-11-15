@@ -19,9 +19,13 @@ plane::~plane()
 
 bool plane::hit(const ray & r, float tMin, float tMax, hit_record & hitRec)
 {
-	float denom = dot(r.mDirection, mNormal);
-	vec4 p0l0 = mPosition - r.mOrigin;
-	float t = p0l0.dot(mNormal) / denom;
+	float denom;
+	dot(r.mDirection, mNormal,denom);
+	vec4 p0l0;
+	mPosition.sub(r.mOrigin, p0l0);
+	float dotResult = 0.0f;
+	p0l0.dot(mNormal, dotResult);
+	float t = dotResult / denom;
 	hitRec.normal = mNormal;
 	hitRec.t = t;
 	hitRec.hitPoint = r.point_at_parameter(t);
@@ -30,8 +34,12 @@ bool plane::hit(const ray & r, float tMin, float tMax, hit_record & hitRec)
 
 bool plane::hit_or_miss(const ray & r, float tMin, float tMax)
 {
-	float denom = dot(r.mDirection, mNormal);
-		vec4 p0l0 = mPosition - r.mOrigin;
-		float t = p0l0.dot(mNormal) / denom;
-		return t > 0.01;
+	float denom;
+	dot(r.mDirection, mNormal,denom);
+	vec4 p0l0;
+	mPosition.sub(r.mOrigin,p0l0);
+	float dotResult;
+	p0l0.dot(mNormal, dotResult);
+	float t = dotResult / denom;
+	return t > 0.01;
 }

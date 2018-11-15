@@ -24,7 +24,6 @@ ray_tracer::ray_tracer(
 	:
 	mImageWidth(pImageWidth),
 	mImageHeight(pImageHeight)
-
 {
 
 	mCamera.mPosition = vec4(0.0f,0.0f,3.0f);
@@ -36,20 +35,27 @@ ray_tracer::ray_tracer(
 	float planeY = -1.0;
 	auto getY = [&](float pY,float radius)->float { return  pY + radius; };
 	//plane
-	mObjects.push_back(new plane(vec4(0.0f, 1.0f, 0.0f),
+
+	
+	mPlane = plane(vec4(0.0f, 1.0f, 0.0f),
 		vec4(0.0f,planeY,0.0f),
 		vec4(.1,.1,.1),
 		Material::REFLECTIVE,
-		ShapeID::PLANE,.1f));
+		ShapeID::PLANE,.1f);
 	//all the spheres
-	mObjects.push_back(new sphere(vec4(0.0f, getY(planeY,.5), -1.0f), .5f, vec4(1.0f, 0.0f, 0.0f), Material::REFLECTIVE, ShapeID::SPHERE,.4f));
-	mObjects.push_back(new sphere(vec4(-2.5f, getY(planeY, 1.0), -1.5f), 1.0f, vec4(1.0, 1.0, 1.0), Material::REFLECTIVE, ShapeID::SPHERE,.8f));
-	mObjects.push_back(new sphere(vec4(2.5f, getY(planeY, 1.0), -1.5f), 1.0f, vec4(0.0f, 0.0f, 1.0f), Material::REFLECTIVE, ShapeID::SPHERE,.4f));
-	mObjects.push_back(new sphere(vec4(-.7f, -.3, -.7f), .3f, vec4(0.0, 1.0, 1.0), Material::DIFFUSE, ShapeID::SPHERE,0.0f));
-	mObjects.push_back(new sphere(vec4(.7f, -.3, -.7f), .3f, vec4(1.0f, 0.0f, 1.0), Material::DIFFUSE, ShapeID::SPHERE,0.0f));
-	mObjects.push_back(new sphere(vec4(-2.5f, getY(planeY, .4), 0), .4f, vec4(1.0f, 1.0f, 1.0f), Material::DIFFUSE, ShapeID::SPHERE, .4f));
-	mObjects.push_back(new sphere(vec4(2.5f, getY(planeY, .4), 0), .4f, vec4(.3, .6, .2), Material::DIFFUSE, ShapeID::SPHERE, .8f));
+	mSpheres[0] = sphere(vec4(0.0f, getY(planeY,.5), -1.0f), .5f, vec4(1.0f, 0.0f, 0.0f), Material::REFLECTIVE, ShapeID::SPHERE,.4f);
+	mSpheres[1] = sphere(vec4(-2.5f, getY(planeY, 1.0), -1.5f), 1.0f, vec4(1.0, 1.0, 1.0), Material::REFLECTIVE, ShapeID::SPHERE,.8f);
+	mSpheres[2] = sphere(vec4(2.5f, getY(planeY, 1.0), -1.5f), 1.0f, vec4(0.0f, 0.0f, 1.0f), Material::REFLECTIVE, ShapeID::SPHERE,.4f);
+	mSpheres[3] = sphere(vec4(-.7f, -.3, -.7f), .3f, vec4(0.0, 1.0, 1.0), Material::DIFFUSE, ShapeID::SPHERE,0.0f);
+	mSpheres[4] = sphere(vec4(.7f, -.3, -.7f), .3f, vec4(1.0f, 0.0f, 1.0), Material::DIFFUSE, ShapeID::SPHERE,0.0f);
+	mSpheres[5] = sphere(vec4(-2.5f, getY(planeY, .4), 0), .4f, vec4(1.0f, 1.0f, 1.0f), Material::DIFFUSE, ShapeID::SPHERE, .4f);
+	mSpheres[6] = sphere(vec4(2.5f, getY(planeY, .4), 0), .4f, vec4(.3, .6, .2), Material::DIFFUSE, ShapeID::SPHERE, .8f);
 
+
+	mObjects.push_back(&mPlane);
+	for (int i = 0; i < 7; ++i)
+		mObjects.push_back(&mSpheres[i]);
+	
 	mAspectRatio = float(mImageWidth) / float(mImageHeight);
 	mCamera.mFOV = 90.0f;
 	mTanHalfFOV = tan(to_radians(mCamera.mFOV/float(2.0)));
@@ -71,7 +77,9 @@ ray ray_tracer::compute_ray_for_AA(float row, float col) {
 	x *= mAspectRatio * mTanHalfFOV;
 	y *= mTanHalfFOV;
 	float z = -1.0f;
-	return(ray(mCamera.mPosition, vec4(x, y, z).normalize()));
+	vec4 result;
+	vec4(x, y, z).normalize(result);
+	return ray(mCamera.mPosition, result);
 }
 
 
@@ -81,7 +89,9 @@ ray ray_tracer::compute_ray(int row, int col) {
 	x *= mAspectRatio * mTanHalfFOV;
 	y *= mTanHalfFOV;
 	float z = -1.0f;
-	return(ray(mCamera.mPosition,vec4(x,y,z).normalize()));
+	vec4 result;
+	vec4(x, y, z).normalize(result);
+	return(ray(mCamera.mPosition,result));
 }
 
 
@@ -112,8 +122,13 @@ vec4 ray_tracer::compute_color(const ray& r,int depth) {
 	*/
 
 	vec4 vHitPoint = hitRec.hitPoint;
-	vec4 lightDir = (mLight.mPosition - vHitPoint).normalize();
-	vec4 viewDir = (vHitPoint - mCamera.mPosition).normalize();
+	vec4 subResult;
+	mLight.mPosition.sub(vHitPoint, subResult);
+	vec4 lightDir; 
+	subResult.normalize(lightDir);
+	vec4 viewDir;
+	vHitPoint.sub(mCamera.mPosition, subResult);
+	(subResult).normalize(viewDir);
 
 	if (closestObject != nullptr)
 	{
@@ -130,7 +145,10 @@ vec4 ray_tracer::compute_color(const ray& r,int depth) {
 				}
 			}
 		
-			vec4 finalColor = (closestObject->get_color()*max(0.0f, dot(hitRec.normal, lightDir)));
+			float dotResult;
+			dot(hitRec.normal, lightDir, dotResult);
+			vec4 finalColor;
+			closestObject->get_color().mul(max(0.0f, dotResult),finalColor);
 			
 			if (isInShadow)
 				return vec4(0.0f);
@@ -140,11 +158,18 @@ vec4 ray_tracer::compute_color(const ray& r,int depth) {
 				if (Material::DIFFUSE == objectMat || depth > MAX_RAY_DEPTH)
 					return finalColor;
 				else if(Material::REFLECTIVE == objectMat) {
-					vec4 reflected = reflect(hitRec.normal,viewDir).normalize();
+					vec4 reflected; 
+					reflect(hitRec.normal, viewDir).normalize(reflected);
 					ray reflectedRay(vHitPoint, reflected);
 					vec4 refColor = compute_color(reflectedRay, depth + 1);
 					//blending the colors
-					return (1 - kr)*finalColor + (kr*refColor);
+					vec4 op1;
+					finalColor.mul((1 - kr), op1);
+					vec4 op2;
+					refColor.mul(kr, op2);
+					vec4 result;
+					op1.add(op2, result);
+					return result;
 				}
 			}
 				
@@ -159,8 +184,14 @@ vec4 ray_tracer::compute_color(const ray& r,int depth) {
 	return vec4(0.2f,.5,.6);
 	vec4 d = r.mDirection;
 	d.make_it_unit();
-	float y = 0.5f*(d.y + 1.0f);
-	return (1.0f - y)*vec4(1.0f, 1.0f, 1.0f) + y*vec4(.2f, 0.4f, 1.0f);
+	float y = 0.5f*(d[1] + 1.0f);
+	vec4 op1;
+	vec4(1.0f, 1.0f, 1.0f).mul((1.0f - y), op1);
+	vec4 op2;
+	vec4(.2f, 0.4f, 1.0f).mul(y,op2);
+	vec4 result;
+	op1.add(op2,result);
+	return result;
 }
 
 
@@ -168,7 +199,7 @@ void ray_tracer::put_pixel(int threadIndex)
 {
 
 	/* some fancy stuff. This doesnt matter*/
-	static float angle = 0.0f;
+	/*static float angle = 0.0f;
 	static float waveAngle = 0.0f;
 	angle += .6f;
 	waveAngle += 5.0f;
@@ -178,7 +209,7 @@ void ray_tracer::put_pixel(int threadIndex)
 	mObjects[4]->mPosition.z = mObjects[1]->mPosition.z + 1.0f*cos(to_radians(angle));
 	mObjects[5]->mPosition.x = mObjects[1]->mPosition.x + 1.0f*sin(to_radians(1-angle));
 	mObjects[5]->mPosition.y = mObjects[1]->mPosition.y + .2*sin(to_radians(waveAngle));
-	mObjects[5]->mPosition.z = mObjects[1]->mPosition.z + 1.0f*cos(to_radians(1-angle));
+	mObjects[5]->mPosition.z = mObjects[1]->mPosition.z + 1.0f*cos(to_radians(1-angle));*/
 
 
 	/* loop which goes through every single pixel and determine its color*/
@@ -207,13 +238,13 @@ void ray_tracer::put_pixel(int threadIndex)
 #endif
 				
 #ifdef CORRECT_GAMMA
-					finalColor = vec4(sqrt(finalColor.r), sqrt(finalColor.g), sqrt(finalColor.b));
+					finalColor = vec4(sqrt(finalColor[0]), sqrt(finalColor[1]), sqrt(finalColor[2]));
 #endif
 				
 				int index = ((row * mImageWidth) + col) * 3;
-				mFrameBuffer[index] = 255.99*finalColor.r;
-				mFrameBuffer[index + 1] = 255.99*finalColor.g;
-				mFrameBuffer[index + 2] = 255.99*finalColor.b;
+				mFrameBuffer[index] = 255.99*finalColor[0];
+				mFrameBuffer[index + 1] = 255.99*finalColor[1];
+				mFrameBuffer[index + 2] = 255.99*finalColor[2];
 			}
 	}
 
@@ -237,7 +268,7 @@ void ray_tracer::render()
 //updates the camera position
 void ray_tracer::updateCameraPos(Direction direction, float dt)
 {
-	float speed = 4.0f;
+/*	float speed = 4.0f;
 
 	switch (direction) {
 	case Direction::LEFT:
@@ -252,7 +283,7 @@ void ray_tracer::updateCameraPos(Direction direction, float dt)
 	case Direction::BACKWARD:
 		mCamera.mPosition = mCamera.mPosition + (vec4::BACKWARD * speed * dt);
 		break;
-	}
+	*/
 
 }
 

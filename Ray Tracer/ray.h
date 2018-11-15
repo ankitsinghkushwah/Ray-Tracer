@@ -3,8 +3,12 @@
 
 #include"vec4.h"
 
-class ray
+_declspec(align(16))
+struct ray
 {
+	vec4 mOrigin;
+	vec4 mDirection;
+
 public:
 
   //construction and destruction
@@ -12,12 +16,15 @@ public:
   ray(const vec4& pOrigin,const vec4& pDirection);
   ~ray();
 
-  inline vec4 point_at_parameter(float t) const {
-	  return ( mOrigin + ( t*mDirection ) ); 
+  inline vec4 point_at_parameter(float t) const 
+  {
+	  vec4 resultDir;
+	  mDirection.mul(t,resultDir);
+	  vec4 addResult;
+	  mOrigin.add(resultDir,addResult);
+	  return addResult;
   }
 
-  vec4 mOrigin;
-  vec4 mDirection;
   
 };
 

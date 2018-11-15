@@ -4,7 +4,7 @@
 #include"vec4.h"
 
 
-struct light {
+struct alignas(16) light {
 	vec4 mPosition;
 	vec4 mColor;
 };

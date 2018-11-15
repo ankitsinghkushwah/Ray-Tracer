@@ -6,19 +6,17 @@
 #include"enum_classes.h"
 #include"hit_record.h"
 
+struct alignas(16) object {
 
-class object {
-
+public:
+	vec4 mPosition;
 protected:
-	
+	float mRefFact;
 	ShapeID mID;
 	Material mMatType;
-	float mRefFact;
 public:
-
-	vec4 mPosition;
-
-	object(vec4 mPosition,ShapeID pID,Material mMatType,float pRefFact);
+	object() {}
+	object(const vec4& mPosition,ShapeID pID,Material mMatType,float pRefFact);
 	virtual bool hit(const ray& r,float tMin, float tMax,hit_record& hitRec) = 0;
 	virtual bool hit_or_miss(const ray& r,float tMin, float tMax) = 0;
 	virtual vec4 get_color() = 0;

@@ -3,7 +3,7 @@
 
 #include"vec4.h"
 
-struct camera {
+struct alignas(16) camera {
 	vec4 mPosition;
 	float mFOV;
 };

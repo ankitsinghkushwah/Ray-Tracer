@@ -6,12 +6,14 @@
 #include"object.h"
 
 
-class plane : public object{
+
+struct alignas(16)  plane : public object{
 	//defines the orientation
 	vec4 mNormal;
 	//defines the color of the plane
 	vec4 mColor;
 public:
+	plane() {}
 	plane(const vec4& pNormal,
 		const vec4& mPosition,
 		const vec4& pColor,

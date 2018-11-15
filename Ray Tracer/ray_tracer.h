@@ -18,7 +18,7 @@
 #include"plane.h"
 
 
-class ray_tracer {
+struct alignas(16) ray_tracer {
 public:
 	ray_tracer(int pImageWidth,
 		int pImageHeight);
@@ -39,6 +39,8 @@ private:
 	float mTanHalfFOV;
 	unsigned char* mFrameBuffer;
 	std::vector<object*> mObjects;
+	sphere mSpheres[7];
+	plane mPlane;
 	camera mCamera;
 	light mLight;
 	//compile-time constants

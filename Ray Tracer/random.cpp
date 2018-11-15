@@ -36,9 +36,9 @@ using namespace std;
 
   vec4 random::inside_unit_sphere() {
     vec4 p;
-    do {
+   /* do {
       p = vec4(real(-1.0f, 1.0f), real(-1.0f, 1.0f), real(-1.0f, 1.0f));
-    } while (p.squared_length() >= 1.0);
+    } while (p.squared_length() >= 1.0);*/
 
     return p;
   }

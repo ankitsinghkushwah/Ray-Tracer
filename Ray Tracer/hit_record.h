@@ -5,10 +5,10 @@
 #include"vec4.h"
 
 
-struct hit_record {
+struct alignas(16) hit_record {
 	vec4 normal;
-	float t;
 	vec4 hitPoint;
+	float t;
 };
 
 #endif

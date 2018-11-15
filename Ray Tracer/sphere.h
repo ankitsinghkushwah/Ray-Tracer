@@ -6,16 +6,13 @@
 #include"object.h"
 #include"enum_classes.h"
 
-class sphere : public object{
-
+struct alignas(16) sphere : public object
+{
 private:
-
+	vec4 mColor;
   float mRadius;
-  vec4 mColor;
-
 public:
-
-  
+	sphere();
   sphere(const vec4& pCenter,
 	  float pRadius,
 	  const vec4& pColor,
@@ -30,8 +27,6 @@ public:
   virtual Material get_material_type() override { return mMatType; }
   virtual ShapeID get_id() override { return mID; }
   virtual float get_ref_fact() override { return mRefFact; }
-
-
 };
 
 #endif

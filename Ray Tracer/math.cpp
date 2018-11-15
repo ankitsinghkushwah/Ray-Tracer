@@ -1,7 +1,13 @@
 #include"math.h"
 
 vec4 reflect(vec4 n, vec4 v) {
-	return (v - (2 *dot(v,n))*n);
+	float dotResult;
+	dot(v,n,dotResult);
+	vec4 mulResult;
+	n.mul(2*dotResult,mulResult);
+	vec4 subResult;
+	v.sub(mulResult,subResult);
+	return subResult;
 }
 
 float Q_rsqrt(float number)

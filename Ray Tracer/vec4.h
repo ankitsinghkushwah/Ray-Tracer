@@ -1,7 +1,7 @@
 #ifndef INC_VEC4_H
 #define INC_VEC4_H
 
-#define USE_SSE
+//#define USE_SSE
 
 #ifndef USE_SSE
 

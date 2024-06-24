@@ -197,7 +197,7 @@ void ray_tracer::put_pixel(int threadIndex)
 				for (int sample = 0; sample < MAX_AA_SAMPLES; sample++) {
 					float u = col + mRandInst->real(0,1);
 					float v = row + mRandInst->real(0,1);
-					r = compute_ray_for_aa(v, u);
+					r = compute_ray_for_AA(v, u);
 					finalColor += compute_color(r, 0);
 				}
 					finalColor /= float(MAX_AA_SAMPLES);
